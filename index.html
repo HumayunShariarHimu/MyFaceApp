@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090c13" />
+  <meta name="description" content="MyFace Studio — create an interactive 3D portrait and compare it with your live camera face on one device." />
+  <title>MyFace Studio — 3D Portrait & Face Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="./logo.svg" />
+</head>
+<body>
+  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="MyFace Studio home">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      <span>myface<span class="brand-light">studio</span></span>
+    </a>
+    <div class="topbar-right">
+      <span class="local-pill"><i></i> LOCAL WORKSPACE</span>
+      <button class="icon-button" id="helpBtn" aria-label="About this app" title="About this app">?</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="intro">
+      <div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL PORTRAIT LAB / 01</div>
+      <h1>Your face.<br><span class="gradient-text">A new dimension.</span></h1>
+      <p class="intro-copy">Upload your portrait, explore its estimated 3D likeness, and compare it with your live camera face — all in this one web app on this device.</p>
+    </section>
+
+    <section class="workspace" aria-label="Portrait workspace">
+      <aside class="panel upload-panel">
+        <div class="panel-heading">
+          <div><span class="step">01</span><h2>Portrait input</h2></div>
+          <span class="tiny-label">SOURCE</span>
+        </div>
+        <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Choose or drop a portrait image">
+          <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+          <div id="emptyUpload" class="empty-upload">
+            <div class="upload-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></div>
+            <strong>Drop your portrait here</strong>
+            <span>or click to browse files</span>
+            <small>JPG, PNG or WEBP · up to 12 MB</small>
+          </div>
+          <div id="previewWrap" class="preview-wrap hidden">
+            <img id="portraitPreview" alt="Selected portrait preview" />
+            <button id="removePhoto" class="remove-photo" type="button" aria-label="Remove portrait">×</button>
+            <div class="preview-badge"><i></i> READY TO VIEW</div>
+          </div>
+        </div>
+        <div id="fileMeta" class="file-meta hidden"><span class="file-dot"></span><div><strong id="fileName">portrait.jpg</strong><small id="fileSize">0 KB</small></div><span class="file-check">✓</span></div>
+        <div id="statusMessage" class="status-message" role="status">Choose a portrait to begin. No upload or account is required.</div>
+        <div class="panel-divider"></div>
+        <div class="section-label">VIEW OPTIONS</div>
+        <label class="toggle-row"><span><strong>Auto rotation</strong><small>Slowly rotate the 3D model</small></span><input id="autoRotate" type="checkbox" checked /><span class="toggle-ui"></span></label>
+        <label class="toggle-row"><span><strong>Wireframe overlay</strong><small>Reveal the portrait surface mesh</small></span><input id="wireframe" type="checkbox" /><span class="toggle-ui"></span></label>
+        <button id="resetView" class="secondary-button" type="button"><span>↺</span> Reset view</button>
+        <div class="privacy-note"><span class="privacy-icon">⌁</span><span><strong>Private by design</strong><br>Photo, descriptor and camera frame stay in this browser. Nothing is sent to an app server.</span></div>
+      </aside>
+
+      <section class="panel viewer-panel">
+        <div class="panel-heading viewer-heading">
+          <div><span class="step">02</span><h2>3D exploration</h2></div>
+          <span class="live-label"><i></i> INTERACTIVE VIEW</span>
+        </div>
+        <div class="viewer-stage" id="viewerStage">
+          <div class="stage-grid"></div>
+          <div class="stage-corner corner-tl"></div><div class="stage-corner corner-br"></div>
+          <div class="stage-meta"><span>FIG. 001</span><span id="viewState">FRONT VIEW</span></div>
+          <div id="canvasHost" class="canvas-host" aria-label="Interactive stylized 3D face. Drag to rotate; scroll to zoom."></div>
+          <div class="viewer-hint"><span class="mouse-icon">↔</span> DRAG TO ROTATE <span class="hint-dot">·</span> SCROLL TO ZOOM</div>
+          <div id="viewerLoading" class="viewer-loading"><div class="loader-ring"></div><span>Preparing 3D scene</span></div>
+        </div>
+        <div class="viewer-controls">
+          <div class="control-group">
+            <span class="control-label">CAMERA</span>
+            <div class="segmented">
+              <button class="segment active" data-view="front" type="button">Front</button>
+              <button class="segment" data-view="threequarter" type="button">¾ View</button>
+              <button class="segment" data-view="side" type="button">Side</button>
+            </div>
+          </div>
+          <div class="control-group expression-group">
+            <span class="control-label">EYE GAZE</span>
+            <div class="segmented">
+              <button class="segment active" data-expression="center" type="button">Center</button>
+              <button class="segment" data-expression="left" type="button">Left</button>
+              <button class="segment" data-expression="right" type="button">Right</button>
+            </div>
+          </div>
+        </div>
+        <div class="viewer-footnote"><span class="footnote-icon">✳</span> Your photo texture is mapped onto an estimated 3D landmark surface with subtle eye-gaze and blink motion. Hidden sides are inferred, not scanned.</div>
+      </section>
+    </section>
+
+    <section class="panel verify-panel" aria-labelledby="verifyTitle">
+      <div class="panel-heading">
+        <div><span class="step">03</span><h2 id="verifyTitle">Live face comparison</h2></div>
+        <span class="tiny-label">ON-DEVICE</span>
+      </div>
+      <p class="verify-intro">This same device opens its camera after you allow access. One live frame is compared in your browser with the portrait you uploaded above.</p>
+      <div class="verify-layout">
+        <div class="camera-card">
+          <div id="cameraPreview" class="camera-preview hidden">
+            <video id="liveVideo" autoplay muted playsinline aria-label="Live camera preview"></video>
+            <span class="camera-live"><i></i> LIVE CAMERA</span>
+          </div>
+          <div id="cameraPlaceholder" class="camera-placeholder"><span class="camera-symbol">◎</span><strong>Camera preview</strong><small>Camera opens only after you press Start camera.</small></div>
+          <div class="camera-actions">
+            <button id="startCamera" class="primary-button" type="button">Start camera</button>
+            <button id="captureMatch" class="primary-button" type="button" disabled>Capture & compare</button>
+            <button id="stopCamera" class="secondary-button hidden" type="button">Stop camera</button>
+          </div>
+        </div>
+        <div class="reference-card">
+          <div class="section-label">LOCAL REFERENCE</div>
+          <p id="verificationReferenceState" class="reference-state">Upload a portrait to prepare a reference</p>
+          <p class="camera-local-note">Your photo reference and live camera frame stay inside this page on this device.</p>
+          <div id="verificationStatus" class="verification-status" data-kind="neutral" role="status" aria-live="polite">Upload one clear portrait. The live camera will run on this same device.</div>
+          <div id="matchResult" class="match-result hidden">
+            <span>Euclidean distance</span><strong id="matchDistance">—</strong>
+            <div id="matchMeter" class="match-meter" aria-hidden="true"><i></i></div>
+          </div>
+        </div>
+      </div>
+      <p class="verify-disclaimer"><strong>Demo limitation:</strong> the score is an uncalibrated 1:1 similarity estimate, not proof of identity. This build does not provide certified liveness/PAD or anti-spoof protection. Do not use it for account access, financial decisions, or other high-impact authentication.</p>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="info-card">
+        <div class="info-icon violet">◈</div><div><h3>Estimated 3D portrait</h3><p>Facial landmarks build a textured front-face surface. Unseen geometry is not recoverable from one photo.</p></div>
+      </article>
+      <article class="info-card">
+        <div class="info-icon cyan">⌘</div><div><h3>Designed for privacy</h3><p>Image selection and preview happen in your browser. Clearing the image removes it from the workspace.</p></div>
+      </article>
+      <article class="info-card">
+        <div class="info-icon amber">◎</div><div><h3>Transparent comparison</h3><p>Live frames and face descriptors are processed in the browser. A match score is not secure authentication.</p></div>
+      </article>
+    </section>
+    <footer class="footer"><span>MYFACE STUDIO <span class="footer-sep">/</span> BUILD 1.0</span><span>MADE FOR EXPLORATION <span class="footer-dot">●</span></span></footer>
+  </main>
+
+  <dialog id="helpDialog" class="help-dialog">
+    <div class="dialog-top"><span class="eyebrow">ABOUT THE STUDIO</span><button id="closeHelp" class="icon-button" aria-label="Close">×</button></div>
+    <h2>A private portrait and comparison workspace.</h2>
+    <p>The app estimates a textured 3D face surface from your photo, animates subtle eye movement, and creates a face descriptor locally for one-to-one comparison. Your image and live camera frames are not uploaded by this app.</p>
+    <p>Open this device’s camera to compare one live frame with your uploaded portrait. The score is for demonstration only and is not certified identity verification or liveness detection.</p>
+    <button id="gotIt" class="primary-button" type="button">Got it <span>→</span></button>
+  </dialog>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
