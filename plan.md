@@ -1,37 +1,35 @@
 # MyFaceApp — Evidence-Based Implementation Plan
 
-## Product goal and honest boundary
+## লক্ষ্য
 
-The app is a single-device, privacy-first portrait studio. A user may upload one 2D photo and explore an estimated, animated 3D facial avatar. The original uploaded 2D photo—not a generated avatar—may be compared with a fresh camera frame as an explicitly labeled, low-stakes 1:1 similarity demo. The 3D avatar, face matching, and presentation-attack detection (PAD/liveness) are separate systems and must never be presented as interchangeable.
+এক-device portrait studio: ব্যবহারকারী 2D photo upload করে local 3D viewer-এ ঘোরানো photo-led estimated head avatar দেখবেন; একই app-এ চাইলে মূল uploaded photo-কে fresh live camera frame-এর সঙ্গে আলাদা low-stakes 1:1 similarity demo করবেন। Avatar output, biometric matching ও liveness/PAD আলাদা feature ও আলাদা দাবি।
 
-A single RGB projection cannot reveal the unseen profile, rear head, hidden geometry or true depth uniquely. Any whole-head completion from one photo is model-inferred/plausible, not a scan or exact identity reconstruction. For observed geometry, the product must request multiple overlapping views/video or a depth scan. A face-matching score does not establish civil identity or liveness; the current app's fixed 0.52 threshold is a demo threshold, not a validated authenticator. See `research/face-tech-review.md`.
+## বর্তমান avatar implementation
 
-## Recommended implementation strategy
+`src/portrait-mesh.js` MediaPipe Face Landmarker থেকে face landmarks নিয়ে uploaded image-কে textured frontal surface-এ map করে। এটিকে procedural 3D head shell, hair cap, ears ও neck-এর সামনে fit করে Three.js group হিসেবে ফেরত দেয়। Surface-এ subtle gaze/blink mesh motion আছে; পুরো head auto-rotate, drag/preset view ও zoom সমর্থন করে। Face shell-এর proportions ও skin/hair palette ছবির face-box/color sample থেকে অনুমান করা হয়।
 
-1. **Keep the current client-side intake private by default.** Accept one clear portrait, inspect face count/pose/quality locally, and provide explicit clear/delete behavior. No upload retention or training on user photos.
-2. **Replace the misleading face-patch presentation before calling it a full avatar.** The existing MediaPipe/Delaunator pipeline produces a triangulated front facial surface. Keep it labeled as a 2.5D estimated facial surface until a distinct full-head asset path is implemented. Do not describe its unseen side as reconstructed.
-3. **Separate avatar from verification.** The original photo is the reference; the camera frame is the probe. Never feed a generated/animated avatar as a real-person or liveness input. Keep similarity in demo mode until an independently evaluated model and locked operating threshold are available.
-4. **Select reconstruction assets only after exact license and compute review.** DECA/MICA/EMOCA and most FLAME releases have non-commercial research restrictions; FaceLift weights have academic-research restrictions despite permissive code; 3DDFA-V2/PRNet code licenses do not settle weight rights. Do not silently package those assets as production-safe. A personal non-commercial prototype may evaluate a restricted model under its terms, but production redistribution/service requires permission.
-5. **Use inference, not per-user model training.** One uploaded image is an inference input, not enough data to train a robust personalized face model. Fine-tuning requires consented multi-view/3D supervision, data rights, GPU compute, and separate validation. The app must not learn from user uploads by default.
-6. **Offer a guided multi-view/depth-capture path only if the product scope changes.** Overlapping, sharp, consistently lit views improve geometric evidence; COLMAP is general SfM/MVS, not a face identity or avatar model. Any face-specific fitter, weights and downstream avatar rig require their own compatible licenses.
-7. **Treat PAD as a separately licensed, separately evaluated later stage.** Fresh camera capture, matcher and PAD decisions must be distinct. A blink/head-turn prompt or face mesh is not a liveness guarantee. Do not claim certification, anti-spoofing or secure authentication without external evaluation.
+এটি আগের face-patch-only render-এর চেয়ে সম্পূর্ণ rotatable head silhouette দেয়, কিন্তু এটি learned AI full-head reconstruction বা আসল ব্যক্তির অদেখা পাশের উদ্ধার নয়। Front-এ photo pixels বেশি পরিচিত; profile/back, hair volume এবং কান/ঘাড়ের geometry generic/procedural estimates। এক ছবি থেকে সেগুলো uniquely জানা যায় না। UI ও README এই পার্থক্য প্রকাশ করবে; full scan/photoreal/identity-faithful দাবি করা যাবে না। Exact visual reconstruction চাইলে বহু-angle video/depth input এবং compatible commercial license-সহ pretrained model service প্রয়োজন।
 
-## Existing stack and project structure
+## Matching, model use এবং safety
 
-- `index.html`: one-page portrait intake, 3D exploration, and same-device similarity demo.
-- `src/main.js`: upload lifecycle, Three.js scene, camera/view controls, and feature coordination.
-- `src/portrait-mesh.js`: MediaPipe Face Landmarker landmark extraction, Delaunay front-surface construction, simple gaze/blink deformation.
-- `src/face-engine.js`: local face-api model loading, one-face validation, descriptor creation, and uncalibrated Euclidean demo score.
-- `src/verification.js`: explicit camera permission, fresh-frame comparison to the uploaded original, and camera cleanup.
-- `src/styles.css`, `src/verification.css`: visual system and responsive styles.
-- `public/models/`: model artifacts. Exact weight/license provenance must be reviewed before making production biometric claims or redistribution.
-- `research/face-tech-review.md`: source-linked technology, license, privacy, compute, and evaluation review.
-- `.github/workflows/deploy.yml`, `vite.config.js`: Vite build and GitHub Pages deployment.
+- Face-api pretrained browser models inference-এর জন্য চলে; user image থেকে model train হয় না এবং uploads default training data নয়।
+- Original reference photo ও fresh camera frame descriptor locally compare হয়; generated avatar matcher reference বা liveness evidence নয়। বর্তমান 0.52 distance threshold demo-only, production calibration নয়।
+- Camera permission explicit user action-এ; capture/stop/page hide হলে stream tracks বন্ধ হয়। Source photo/frame/descriptor app backend-এ persist হয় না। MediaPipe WASM CDN থেকে load হয়, কিন্তু image/video server-এ যায় না।
+- Blink/head-turn animation PAD নয়। No certified liveness, camera injection defense, account authentication or high-impact access decision.
+- Research report-এর license matrix অনুসরণ করে exact model/weight/dataset/texture/dependency clear না হলে model asset যোগ/redistribute নয়। One image fine-tuning-এর পর্যাপ্ত training set নয়।
 
-## Design direction
+## Project structure
 
-Preserve the existing dark, neon-accented portrait-lab design. The interface should make uncertainty visible: separate stages for photo intake, estimated geometry, and live similarity; label generated surfaces as estimates; show that local comparison is not identity proof; ask for camera permission only on explicit action; stop camera tracks after capture; and visibly distinguish local processing from any future opt-in server processing. Avoid marketing language suggesting a real 3D scan, authentication, or liveness detection.
+- `index.html`: upload, 3D viewer, similarity workflow ও limitation labels.
+- `src/main.js`: Three.js scene, upload lifecycle, view/expression controls.
+- `src/portrait-mesh.js`: landmark inference, textured face surface, procedural head-shell completion, gaze/blink deformation.
+- `src/face-engine.js`: local model inference, one-face checks, demo similarity distance.
+- `src/verification.js`: camera permission, fresh-frame capture, comparison status ও stream cleanup.
+- `src/styles.css`, `src/verification.css`: responsive styling.
+- `public/models/`: bundled model artifacts; distribution rights আলাদাভাবে audit করতে হবে.
+- `research/face-tech-review.md`: source-linked technical, license/privacy and evaluation research.
+- `.github/workflows/deploy.yml`, `vite.config.js`: Pages deployment/build configuration.
 
-## Research basis
+## Design
 
-The source-linked review in `research/face-tech-review.md` covers monocular reconstruction (DECA, MICA, EMOCA, FaceLift, 3DDFA-V2, PRNet), multi-view capture/COLMAP, FLAME and glTF morph targets, MediaPipe browser landmarks/blendshapes, face-api.js/InsightFace matching, NIST 1:1/PAD, dataset/model licensing, compute, privacy and evaluation. Exact versions and assets must be rechecked before distribution because code, weights, datasets, textures and dependencies can have different terms.
+বিদ্যমান portrait-lab look বজায়: deep navy canvas, teal/violet spatial accents, clear local-processing status এবং uncertainty-র জন্য amber cues। UI-তে front photo-surface বনাম inferred head shell আলাদা করে বলা হবে। Camera শুধু explicit click-এর পর; capture শেষে বন্ধ। 3D motion gentle, user interaction-এ responsive, reduced-motion preference সম্মান করবে।

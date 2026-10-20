@@ -1,11 +1,11 @@
-import * as faceapi from '@vladmandic/face-api';
-
 const MODEL_BASE = `${import.meta.env.BASE_URL}models`;
 let loadPromise;
+let faceapi;
 
 export function loadFaceModels() {
   if (!loadPromise) {
     loadPromise = (async () => {
+      faceapi = await import('@vladmandic/face-api');
       await faceapi.tf.ready();
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_BASE),

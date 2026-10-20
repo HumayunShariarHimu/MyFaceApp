@@ -54,7 +54,7 @@ function loadPortrait(file) {
   if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
   currentObjectUrl = URL.createObjectURL(file);
   portraitPreview.onload = () => {
-    setStatus('Portrait loaded. Building a landmark-based 3D estimate and local matching reference…');
+    setStatus('Portrait loaded. Estimating the visible face and completing a rotatable avatar shell locally…');
     setReferenceFromImage(portraitPreview);
     createPortraitMesh(portraitPreview).then((mesh) => {
       if (!headGroup) return;
@@ -66,7 +66,7 @@ function loadPortrait(file) {
       targetRotX = 0;
       autoRotate = true;
       $('autoRotate').checked = true;
-      setStatus('Your portrait likeness is active in the estimated 3D view. It rotates gently and the eyes move/blink; drag for more angles.');
+      setStatus('Estimated full-head avatar ready. The front uses your photo; side and rear geometry are inferred. Drag to inspect.');
     }).catch((error) => {
       if (error.name === 'AbortError') return;
       console.error('3D portrait reconstruction failed', error);

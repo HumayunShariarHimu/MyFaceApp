@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#090c13" />
-  <meta name="description" content="MyFace Studio — create an interactive 3D portrait and compare it with your live camera face on one device." />
-  <title>MyFace Studio — 3D Portrait & Face Match</title>
+  <meta name="description" content="MyFace Studio — explore a locally estimated, animated 3D portrait avatar and a separate live face similarity demo." />
+  <title>MyFace Studio — 3D Portrait Avatar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,8 +28,8 @@
   <main class="app-shell">
     <section class="intro">
       <div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL PORTRAIT LAB / 01</div>
-      <h1>Your face.<br><span class="gradient-text">A new dimension.</span></h1>
-      <p class="intro-copy">Upload your portrait, explore its estimated 3D likeness, and compare it with your live camera face — all in this one web app on this device.</p>
+      <h1>Your portrait.<br><span class="gradient-text">An animated 3D avatar.</span></h1>
+      <p class="intro-copy">Upload one clear photo to build a rotatable head-and-face avatar. Your photo shapes the visible front; AI-assisted landmarks and procedural geometry estimate the unseen sides.</p>
     </section>
 
     <section class="workspace" aria-label="Portrait workspace">
@@ -65,13 +65,13 @@
       <section class="panel viewer-panel">
         <div class="panel-heading viewer-heading">
           <div><span class="step">02</span><h2>3D exploration</h2></div>
-          <span class="live-label"><i></i> INTERACTIVE VIEW</span>
+          <span class="live-label"><i></i> INFERRED AVATAR</span>
         </div>
         <div class="viewer-stage" id="viewerStage">
           <div class="stage-grid"></div>
           <div class="stage-corner corner-tl"></div><div class="stage-corner corner-br"></div>
           <div class="stage-meta"><span>FIG. 001</span><span id="viewState">FRONT VIEW</span></div>
-          <div id="canvasHost" class="canvas-host" aria-label="Interactive stylized 3D face. Drag to rotate; scroll to zoom."></div>
+          <div id="canvasHost" class="canvas-host" aria-label="Interactive estimated 3D head avatar. Drag to rotate; scroll to zoom."></div>
           <div class="viewer-hint"><span class="mouse-icon">↔</span> DRAG TO ROTATE <span class="hint-dot">·</span> SCROLL TO ZOOM</div>
           <div id="viewerLoading" class="viewer-loading"><div class="loader-ring"></div><span>Preparing 3D scene</span></div>
         </div>
@@ -93,7 +93,7 @@
             </div>
           </div>
         </div>
-        <div class="viewer-footnote"><span class="footnote-icon">✳</span> Your photo texture is mapped onto an estimated 3D landmark surface with subtle eye-gaze and blink motion. Hidden sides are inferred, not scanned.</div>
+        <div class="viewer-footnote"><span class="footnote-icon">✳</span> Photo-derived face surface + estimated head volume, ears, hair cap and neck. Gaze/blink are subtle mesh animation; side and rear details are generated estimates, not a 3D scan.</div>
       </section>
     </section>
 
@@ -132,7 +132,7 @@
 
     <section class="bottom-grid">
       <article class="info-card">
-        <div class="info-icon violet">◈</div><div><h3>Estimated 3D portrait</h3><p>Facial landmarks build a textured front-face surface. Unseen geometry is not recoverable from one photo.</p></div>
+        <div class="info-icon violet">◈</div><div><h3>Photo-led 3D avatar</h3><p>The visible face is photo-textured and landmark-shaped. The full rotating head shell is completed with estimated geometry; unseen anatomy is not known from one photo.</p></div>
       </article>
       <article class="info-card">
         <div class="info-icon cyan">⌘</div><div><h3>Designed for privacy</h3><p>Image selection and preview happen in your browser. Clearing the image removes it from the workspace.</p></div>
@@ -147,7 +147,7 @@
   <dialog id="helpDialog" class="help-dialog">
     <div class="dialog-top"><span class="eyebrow">ABOUT THE STUDIO</span><button id="closeHelp" class="icon-button" aria-label="Close">×</button></div>
     <h2>A private portrait and comparison workspace.</h2>
-    <p>The app estimates a textured 3D face surface from your photo, animates subtle eye movement, and creates a face descriptor locally for one-to-one comparison. Your image and live camera frames are not uploaded by this app.</p>
+    <p>The app builds a photo-led facial surface on an inferred full-head avatar shell, then adds subtle gaze and blink animation. The front resembles your photo; side and rear geometry are generated estimates, not recovered anatomy or a full 3D scan. Your image and live camera frames are not uploaded by this app.</p>
     <p>Open this device’s camera to compare one live frame with your uploaded portrait. The score is for demonstration only and is not certified identity verification or liveness detection.</p>
     <button id="gotIt" class="primary-button" type="button">Got it <span>→</span></button>
   </dialog>

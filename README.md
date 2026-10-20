@@ -1,30 +1,36 @@
-# MyFaceApp — 3D Portrait ও Face Match
+# MyFaceApp — 3D Portrait Avatar ও Live Face Similarity
 
-MyFaceApp হলো একটি single-device browser portrait workspace। 2D photo থেকে MediaPipe facial landmarks ব্যবহার করে textured, estimated 3D face surface তৈরি হয়; subtle eye-gaze/blink motion ও interactive rotation থাকে। একই device-এর live camera frame browser-এর ভেতর photo reference-এর সঙ্গে 1:1 তুলনা হয়।
+MyFaceApp একটি এক-device portrait workspace। পরিষ্কার একক 2D photo থেকে MediaPipe Face Landmarker মুখের landmarks বের করে; সেই photo-র textured front-face surface-কে একটি locally generated, rotatable estimated head shell (head volume, hair cap, ears, neck)-এর সঙ্গে যুক্ত করা হয়। Three.js-এ auto-rotation, drag/zoom, preset views, wireframe, eye-gaze ও blink mesh animation আছে। একই device-এর live camera frame-কে **মূল uploaded photo**-র সঙ্গে আলাদা 1:1 similarity demo-তে compare করা যায়।
 
-## কীভাবে ব্যবহার করবেন
+## ব্যবহার
 
-1. এই device-এ JPG, PNG বা WEBP portrait (সর্বোচ্চ 12 MB) বেছে নিন। ছবিতে একটিমাত্র সামনে-তাকানো মুখ ও পর্যাপ্ত আলো রাখুন।
-2. Browser-এ landmarks ও face descriptor তৈরি হবে। 3D panel-এ portrait-এর textured face surface দেখুন; drag করে ঘোরান, camera preset ও gaze controls ব্যবহার করুন।
-3. `Start camera` চাপুন এবং camera permission দিন; তারপর `Capture & compare` চাপলে একই device-এর একটি live frame reference portrait-এর সঙ্গে compare হবে। Capture শেষে camera বন্ধ হয়।
+1. JPG/PNG/WEBP, সর্বোচ্চ 12 MB, একটিমাত্র সামনে-তাকানো মুখসহ upload করুন; ভালো আলো, sharp focus, খোলা মুখের contour এবং কম occlusion ফল উন্নত করে।
+2. inference শেষ হলে drag/touch করে head ঘোরান, wheel/pinch-এ zoom করুন; front/three-quarter/side view, auto-rotation, gaze ও wireframe ব্যবহার করুন। Upload-এর পর সামনের দৃশ্য photo-textured landmark surface; পাশ/পেছন procedural model-prior দিয়ে অনুমান করা head shell—কোনোটিই scan নয়।
+3. Face comparison চাইলে `Start camera` চাপুন, permission দিন, একটি live frame capture করুন। Browser uploaded original ও probe-র face descriptor compare করে; capture-এর পর camera stream বন্ধ হয়।
+4. ছবি সরাতে Remove চাপুন। Page refresh/close করলে in-memory photo, descriptor ও frame অ্যাপের server-এ সংরক্ষিত হয় না।
 
-Camera access-এর জন্য HTTPS দরকার। GitHub Pages-এর site URL: https://humayunshariarhimu.github.io/MyFaceApp/ .
+Live site: https://humayunshariarhimu.github.io/MyFaceApp/ . HTTPS camera permission-এর জন্য প্রয়োজন।
 
-## গোপনীয়তা
+## 3D ও animation-এর প্রকৃত সীমা
 
-- Reference image, live camera frame এবং face descriptor browser-এ স্থানীয়ভাবে process হয়; app কোনো backend-এ সেগুলো upload বা persist করে না।
-- কোনো QR, pairing বা দ্বিতীয় device flow নেই। Photo, face descriptor ও live camera frame এই browser-এর memory-তে থাকে; app server-এ পাঠায় না।
-- Camera শুধু ব্যবহারকারী বোতাম চাপলে খোলে; একবার capture/compare হলে stream থামে। App কোনো ছবি বা frame সংরক্ষণ করে না।
+একটি ordinary 2D ছবি থেকে অদেখা profile, rear head, true depth, ears-এর পেছন, চুলের volume বা occlusion-এর নিচের geometry uniquely recover করা অসম্ভব। বর্তমান implementation-এ বাস্তব front photo-র landmarks/texture আছে; মাথার পাশ/পেছন, ears, hair cap ও neck হলো code-এ locally তৈরি করা plausible procedural completion। Foto-driven exact 360° identity-faithful scan, learned personalized 3D model, measured anatomy কিংবা photorealistic generative reconstruction নয়। একাধিক overlapping angle/video বা depth scan বেশি geometry evidence দেয়; pretrained reconstruction model inference করতে পারে, কিন্তু license-clear commercial model/weights না পাওয়া পর্যন্ত restricted research assets ship করা হয়নি।
 
-## নির্ভুলতা ও নিরাপত্তার সীমা
+Blink/gaze হলো landmark surface-এর subtle mesh motion; এটি natural facial performance capture নয়, nor proof of liveness. High-fidelity mouth/cheek/jaw animation-এর জন্য compatible facial rig/blendshape model, expression capture data এবং license-cleared model দরকার।
 
-একটি 2D ছবি দিয়ে পুরো 3D মুখের অদেখা পাশ/পেছনের geometry উদ্ধার করা যায় না। এখানে 3D mesh হলো MediaPipe-এর single-image landmark-ভিত্তিক আনুমানিক face surface, যার ওপর মূল photo texture করা হয়; এটি 3D scan বা photorealistic full-head reconstruction নয়।
+## Matching, liveness ও model learning
 
-Face matching-এ `@vladmandic/face-api` Tiny Face Detector/descriptor pipeline ও 0.52 Euclidean-distance demo threshold ব্যবহৃত হয়েছে। Threshold ব্যক্তিগত dataset-এ calibrate করা হয়নি; ফলটি আনুমানিক sample similarity, identity proof বা probability নয়। App-এ certified liveness / presentation-attack detection (PAD), camera injection protection, device integrity verification বা red-team validation নেই। Account access, financial, legal, medical বা অন্য high-impact decisions-এ এটি ব্যবহার করবেন না।
+`@vladmandic/face-api` browser-এ descriptor তৈরি করে; বর্তমান 0.52 Euclidean threshold কেবল demo constant, representative held-out population/device dataset-এ calibrated নয়। Result similarity signal—identity proof, secure login/authentication, 1:N identity search বা reliable biometric verification নয়। Liveness/PAD আলাদা problem; camera stream বা blink/head-turn নিজে spoof detection প্রমাণ করে না। High-impact ব্যবহারে অ্যাপটি ব্যবহার করবেন না।
 
-এটি uploaded reference ও একই device-এর একটি camera frame-এর 1:1 comparison; 1:N database search নয়। Production deployment-এর আগে model/threshold-এর independent accuracy evaluation, PAD test, security review, biometric-data consent/retention design, legal review এবং false-accept/false-reject risk controls প্রয়োজন।
+একটি upload থেকে নতুন model train হয় না। এখানে pretrained face/landmark model-এর inference হচ্ছে। Personalization training-এর জন্য user consent, বহু-view/3D supervision, data rights, GPU compute এবং স্বাধীন evaluation প্রয়োজন; user uploads default-এ training data নয়।
 
-## Local development
+## Privacy
+
+- Face photo/descriptor/camera frame browser memory-তে থাকে; application backend-এ upload/persist হয় না। Camera শুধু user click-এর পর খোলে।
+- MediaPipe WASM বর্তমান build-এ jsDelivr CDN থেকে load হয়; তাই প্রথম load-এ browser ওই third party-তে network request করে। ছবি/ভিডিও তাতে পাঠানো হয় না।
+- Clear/close করলে app-side in-memory reference শেষ হয়। Browser/devtools/network extensions বা OS-level capture-এর বিরুদ্ধে এটি privacy guarantee নয়।
+- Visible photo-তে অন্য কেউ থাকলে তাদের সম্মতি ছাড়া ব্যবহার করবেন না।
+
+## Development
 
 Node.js 20.19+ বা 22.12+:
 
@@ -33,23 +39,27 @@ npm ci
 npm run start
 ```
 
-Production build ও preview:
+Production:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-Face recognition model assets `public/models/`-এ bundled। MediaPipe WASM jsDelivr CDN থেকে load হয়; MediaPipe face-landmarker model asset local `public/models/`-এ আছে.
+`src/portrait-mesh.js` landmarks দিয়ে photo-textured face surface ও procedural estimated avatar shell তৈরি করে। `src/main.js` Three.js scene/UI নিয়ন্ত্রণ করে। `src/face-engine.js` local face descriptor ও demo distance তৈরি করে। `src/verification.js` same-device permission/capture/cleanup flow নিয়ন্ত্রণ করে। `research/face-tech-review.md` source-linked model, license, compute, privacy ও evaluation review।
 
-## Deployment
+## License reminder
 
-`main` branch-এ push হলেই `.github/workflows/deploy.yml` build করে GitHub Pages-এ প্রকাশ করে। Repository Settings → Pages → Build and deployment-এ `GitHub Actions` source চালু থাকতে হবে.
+Project source MIT/open license ধরে নেওয়া যাবে না যতক্ষণ repository-তে স্পষ্ট license নেই। Dependencies, bundled face-api weights, MediaPipe model/WASM, datasets ও downloadable avatar assets-এর exact version/terms আলাদাভাবে audit করতে হবে। DECA/MICA/EMOCA/অনেক FLAME version এবং FaceLift weights-এর মতো research-only assets production-এ অনুমতি ছাড়া যোগ করবেন না। Open repo code license মানেই weights-এর permission নয়।
 
-## প্রযুক্তি ও সূত্র
+## Deploy
 
-Three.js 3D rendering, MediaPipe Tasks Vision 3D face landmarks, `@vladmandic/face-api` browser-side face descriptor.
+Push to `main` runs `.github/workflows/deploy.yml`, Vite build করে GitHub Pages artifact deploy করে। GitHub Settings → Pages → Build and deployment source `GitHub Actions` হতে হবে.
 
-- NIST FRTE 1:1 verification: https://pages.nist.gov/frvt/html/frvt11.html
-- ISO/IEC 30107-3:2023 PAD testing/reporting: https://www.iso.org/standard/79520.html
-- MediaPipe Face Landmarker: https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker
+## Sources
+
+- Technical/open-source review: `research/face-tech-review.md`
+- [MediaPipe Face Landmarker](https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker)
+- [NIST FRTE 1:1 verification](https://pages.nist.gov/frvt/html/frvt11.html)
+- [NIST FATE PAD](https://pages.nist.gov/frvt/html/frvt_pad.html)
+- [ISO/IEC 30107-1](https://www.iso.org/standard/83828.html)
